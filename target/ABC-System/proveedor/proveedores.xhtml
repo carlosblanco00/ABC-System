@@ -1,0 +1,155 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:p="http://primefaces.org/ui">
+
+<h:head>
+</h:head>
+
+<h:body>
+	<h:form id="form">
+
+		<p:panelGrid columns="1" layout="grid"
+			styleClass="showcase-text-align-center">
+
+			<p:dataTable id="providerDataTable" var="provider"
+				value="#{proveedorMB.listProvider}" widgetVar="providersTable"
+				emptyMessage="No se encontraron datos"
+				filteredValue="#{proveedorMB.filteredProvider}" lazy="false">
+
+				<f:facet name="header">
+
+					<p:toolbar>
+						<p:toolbarGroup>
+							<span>Provedores</span>
+						</p:toolbarGroup>
+						<p:toolbarGroup align="right">
+							<p:commandButton value="New" icon="pi pi-plus"
+								oncomplete="PF('manageProviderDialog').show()" action="#{proveedorMB.resetSelectedProvider}"
+								update=":form:manageProviderDialog" styleClass="ui-button-success" style="margin-right: .5rem">
+								<p:resetInput target="" />
+							</p:commandButton>
+						</p:toolbarGroup>
+					</p:toolbar>
+
+				</f:facet>
+
+				<p:column headerText="Id" sortBy="#{provider.id}">
+					<h:outputText value="#{provider.id}" />
+				</p:column>
+
+				<p:column headerText="Nombre" sortBy="#{provider.nombre}"
+					filterBy="#{provider.nombre}" filterMatchMode="contains">
+					<h:outputText style="vertical-align: middle; margin-left: .5rem"
+						value="#{provider.nombre}" />
+				</p:column>
+
+				<p:column headerText="Num. identificación"
+					filterBy="#{provider.numeroIdentificacion}"
+					filterMatchMode="contains"
+					sortBy="#{provider.numeroIdentificacion}">
+
+					<h:outputText style="vertical-align: middle; margin-left: .5rem"
+						value="#{provider.numeroIdentificacion}" />
+				</p:column>
+
+				<p:column headerText="Dirección" filterMatchMode="contains"
+					sortBy="#{provider.direccion}">
+					<h:outputText value="#{provider.direccion}" />
+				</p:column>
+
+				<p:column headerText="email" filterMatchMode="contains">
+					<h:outputText value="#{provider.email}" />
+				</p:column>
+
+				<p:column headerText="Num. Vehiculos disponibles"
+					sortBy="#{provider.numeroVehiculosDisponibles}"
+					filterMatchMode="contains" converter="javax.faces.Integer">
+					<h:outputText value="#{provider.numeroVehiculosDisponibles}" />
+				</p:column>
+
+				<p:column exportable="false">
+					<p:commandButton icon="pi pi-pencil"
+						update=":form:manageProviderDialog"
+						oncomplete="PF('manageProviderDialog').show()"
+						styleClass="edit-button rounded-button" process="@this">
+						<f:setPropertyActionListener
+							target="#{proveedorMB.selectedProvider}" value="#{provider}" />
+					</p:commandButton>
+
+					<p:commandButton class="ui-button-danger rounded-button"
+						icon="pi pi-trash" process="@this" update=":form:deleteProviderDialog"
+						oncomplete="PF('deleteProviderDialog').show()">
+						<f:setPropertyActionListener value="#{provider}"
+							target="#{proveedorMB.selectedProvider}" />
+					</p:commandButton>
+				</p:column>
+
+			</p:dataTable>
+
+
+		</p:panelGrid>
+
+
+		<p:dialog id="manageProviderDialog"
+			header="#{proveedorMB.selectedProvider.id == null? 'Nuevo proveedor': 'Editar proveedor'}"
+			showEffect="fade" modal="true" widgetVar="manageProviderDialog"
+			responsive="true">
+			<p:outputPanel id="manage-provider" class="ui-fluid">
+				<p:outputPanel>
+
+					<div class="field">
+						<p:outputLabel for="name">Nombre</p:outputLabel>
+						<p:inputText id="name"
+							value="#{proveedorMB.selectedProvider.nombre}" required="true" />
+					</div>
+					<div class="field">
+						<p:outputLabel for="numIdentificacion">Num. identificación</p:outputLabel>
+						<p:inputText id="numIdentificacion"
+							value="#{proveedorMB.selectedProvider.numeroIdentificacion}" />
+					</div>
+					<div class="field">
+						<p:outputLabel for="direccion">Dirección</p:outputLabel>
+						<p:inputText id="direccion"
+							value="#{proveedorMB.selectedProvider.direccion}" required="true" />
+					</div>
+
+					<div class="field">
+						<p:outputLabel for="email">Email</p:outputLabel>
+						<p:inputText id="email"
+							value="#{proveedorMB.selectedProvider.email}" required="true" />
+					</div>
+
+				</p:outputPanel>
+			</p:outputPanel>
+
+			<f:facet name="footer">
+				<p:commandButton value="Save" icon="pi pi-check"
+					action="#{proveedorMB.saveOrModifyProvider}"
+					update=":form:providerDataTable, manageProviderDialog" ajax="true"
+					process="manage-provider @this" />
+				<p:commandButton value="Cancel" icon="pi pi-times"
+					onclick="PF('manageProviderDialog').hide()"
+					class="ui-button-secondary" type="button"
+					update=":form:providerDataTable" />
+			</f:facet>
+		</p:dialog>
+
+		<p:confirmDialog id="deleteProviderDialog" widgetVar="deleteProviderDialog" showEffect="fade"
+			width="300"
+			message="Delete the provider #{proveedorMB.selectedProvider.nombre}?"
+			header="Confirm" severity="warn">
+			<p:commandButton value="Yes" icon="pi pi-check"
+				action="#{proveedorMB.deleteProvider}" process="@this"
+				update=":form:providerDataTable" ajax="true"
+				oncomplete="PF('deleteProviderDialog').hide()" />
+			<p:commandButton value="No" type="button"
+				styleClass="ui-button-secondary" icon="pi pi-times"
+				onclick="PF('deleteProviderDialog').hide()" />
+		</p:confirmDialog>
+
+
+
+	</h:form>
+</h:body>
+</html>

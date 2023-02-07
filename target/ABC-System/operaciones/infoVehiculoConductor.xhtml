@@ -1,0 +1,228 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:p="http://primefaces.org/ui">
+
+<h:head>
+</h:head>
+
+<h:body>
+
+	<h:form id="form">
+
+		<p:fieldset legend="Vehiculos por proveedor" toggleable="true"
+			toggleSpeed="500">
+
+			<p:panelGrid columns="4" id="conductorVehiculoFilter"
+				columnClasses="ui-grid-col-2,ui-grid-col-4,ui-grid-col-2,ui-grid-col-4"
+				layout="grid" styleClass="ui-panelgrid-blank ui-fluid"
+				style="border:0px none; background-color:transparent;">
+
+				<p:row styleClass="my-heading-row">Filtro busqueda</p:row>
+
+				<p:outputLabel value="Proveedor: " />
+				<p:selectOneMenu id="selectProvider"
+					value="#{conductorVehiculoMB.vehiculoCondutorFilter.idProveedor}">
+					<f:selectItem itemLabel="Todos" itemValue="" />
+					<f:selectItems value="#{proveedorMB.listProvider}" var="provider"
+						itemLabel="#{provider.nombre}" itemValue="#{provider.id}" />
+				</p:selectOneMenu>
+
+				<p:outputLabel value="PLaca" />
+				<p:inputText id="placa"
+					value="#{conductorVehiculoMB.vehiculoCondutorFilter.placa}" />
+
+				<p:outputLabel value="Identifiacion Conductor" />
+				<p:inputText id="idConductor"
+					value="#{conductorVehiculoMB.vehiculoCondutorFilter.numIdentConductor}" />
+
+
+
+
+
+			</p:panelGrid>
+			<p:panelGrid columns="1" styleClass="ui-panelgrid-blank ui-fluid"
+				style="border:0px none; background-color:transparent;" align="right">
+
+				<p:commandButton value="Buscar" icon="pi pi-check"
+					action="#{conductorVehiculoMB.buscarVehiculosCondutores}"
+					process="conductorVehiculoFilter @this"
+					update="conductorVehiculoDataTable" ajax="true">
+				</p:commandButton>
+
+			</p:panelGrid>
+
+
+
+		</p:fieldset>
+
+		<p:panelGrid columns="1" layout="grid" 
+			styleClass="showcase-text-align-center">
+
+			<p:dataTable id="conductorVehiculoDataTable" var="conductorVehiculo"
+				value="#{conductorVehiculoMB.listConductorVehiculo}"
+				widgetVar="conductorVehiculoDataTable"
+				emptyMessage="No se encontraron datos"
+				filteredValue="#{conductorVehiculoMB.filteredConductorVehiculo}"
+				lazy="false">
+
+				<f:facet name="header">
+
+					<p:toolbar>
+						<p:toolbarGroup>
+							<span>Vehiculos</span>
+						</p:toolbarGroup>
+						<p:toolbarGroup align="right">
+							<p:commandButton value="New" icon="pi pi-plus"
+								oncomplete="PF('manageVehicleDialog').show()"
+								update=":form:manageVehicleDialog" action="#{conductorVehiculoMB.resetvehiculoEntit()}"
+								styleClass="ui-button-success" style="margin-right: .5rem">
+							</p:commandButton>
+						</p:toolbarGroup>
+					</p:toolbar>
+
+				</f:facet>
+
+				<p:column headerText="Placa vehiculo"
+					sortBy="#{conductorVehiculo.vehiculo.placa}"
+					filterBy="#{conductorVehiculo.vehiculo.placa}"
+					filterMatchMode="contains">
+					<h:outputText value="#{conductorVehiculo.vehiculo.placa}" />
+				</p:column>
+
+				<p:column headerText="Marca"
+					sortBy="#{conductorVehiculo.vehiculo.marca}">
+					<h:outputText style="vertical-align: middle; margin-left: .5rem"
+						value="#{conductorVehiculo.vehiculo.marca}" />
+				</p:column>
+
+				<p:column headerText="Modelo"
+					sortBy="#{conductorVehiculo.vehiculo.modelo}">
+					<h:outputText style="vertical-align: middle; margin-left: .5rem"
+						value="#{conductorVehiculo.vehiculo.modelo}" />
+				</p:column>
+
+				<p:column headerText="Num. identificación conductor"
+					filterBy="#{conductorVehiculo.conductor.numeroIdentificacion}"
+					filterMatchMode="contains"
+					sortBy="#{conductorVehiculo.conductor.numeroIdentificacion}">
+					<h:outputText
+						value="#{conductorVehiculo.conductor.numeroIdentificacion}"
+						rendered="#{conductorVehiculo.conductor != null}" />
+
+					<p:commandButton value="Asignar conductor" icon="pi pi-plus"
+						oncomplete="PF('manageVehicleDialog').show()"
+						update=":form:manageVehicleDialog"
+						rendered="#{conductorVehiculo.conductor == null}"
+						styleClass="ui-button-success" style="margin-right: .5rem">
+					</p:commandButton>
+
+				</p:column>
+
+				<p:column headerText="Nombre conductor" filterMatchMode="contains">
+					<h:outputText value="#{conductorVehiculo.conductor.nombre}"
+						rendered="#{conductorVehiculo.conductor != null}" />
+				</p:column>
+
+				<p:column headerText="Estado">
+					<h:outputText value="#{conductorVehiculo.vehiculo.estado}" />
+				</p:column>
+
+				<p:column exportable="false">
+					<p:commandButton icon="pi pi-pencil"
+						update=""
+						oncomplete="PF('manageProviderDialog').show()"
+						styleClass="edit-button rounded-button" process="@this">
+						<f:setPropertyActionListener
+							target="#{proveedorMB.selectedProvider}" value="#{provider}" />
+					</p:commandButton>
+
+					<p:commandButton class="ui-button-danger rounded-button"
+						icon="pi pi-trash" process="@this"
+						update=""
+						oncomplete="PF('deleteProviderDialog').show()">
+						<f:setPropertyActionListener value="#{provider}"
+							target="#{proveedorMB.selectedProvider}" />
+					</p:commandButton>
+				</p:column>
+
+
+
+
+
+
+			</p:dataTable>
+
+
+		</p:panelGrid>
+
+		<p:dialog id="manageVehicleDialog"
+			header="#{conductorVehiculoMB.vehiculoEntity.idVehiculo == null? 'Nuevo Vehiculo': 'Editar vehiculo'}"
+			showEffect="fade" modal="true" widgetVar="manageVehicleDialog"
+			responsive="true">
+			<p:outputPanel id="manage-vehicle" class="ui-fluid">
+				
+
+					<div class="field">
+						<p:outputLabel for="newPlaca" >Placa</p:outputLabel>
+						<p:inputText id="newPlaca"
+							value="#{conductorVehiculoMB.vehiculoEntity.placa}"
+							required="true" />
+					</div>
+					<div class="field">
+						<p:outputLabel for="newMarca">Marca</p:outputLabel>
+						<p:inputText id="newMarca"
+							value="#{conductorVehiculoMB.vehiculoEntity.marca}" />
+					</div>
+					<div class="field">
+						<p:outputLabel for="newModelo">Modelo</p:outputLabel>
+						<p:inputText id="newModelo"
+							value="#{conductorVehiculoMB.vehiculoEntity.modelo}"
+							required="true" />
+					</div>
+
+					<div class="field">
+						<p:outputLabel for="selectNewProvider" value="Proveedor: " />
+						<p:selectOneMenu id="selectNewProvider"
+							value="#{conductorVehiculoMB.vehiculoEntity.provedor}">
+							<f:selectItem itemLabel="Todos" itemValue="" />
+							<f:selectItems value="#{proveedorMB.listProvider}" var="provider"
+								itemLabel="#{provider.nombre}" itemValue="#{provider}" />
+						</p:selectOneMenu>
+					</div>
+					<div class="field">
+						<p:outputLabel for="newEstado">Estado</p:outputLabel>
+						<p:inputText id="newEstado"
+							value="#{conductorVehiculoMB.vehiculoEntity.estado}"
+							required="true" />
+					</div>
+
+			</p:outputPanel>
+
+			<f:facet name="footer">
+				<p:commandButton value="Save" icon="pi pi-check"
+					action="#{conductorVehiculoMB.saveVehicle()}"
+					update=":form:conductorVehiculoDataTable, manageVehicleDialog"
+					process="manage-vehicle @this" />
+				<p:commandButton value="Cancel" icon="pi pi-times"
+					onclick="PF('manageVehicleDialog').hide()"
+					class="ui-button-secondary" type="button"
+					update=":form:conductorVehiculoDataTable, manageVehicleDialog" />
+			</f:facet>
+		</p:dialog>
+
+		<p:confirmDialog id="assignDriverDialog"
+			widgetVar="assignDriverDialog" showEffect="fade" width="300"
+			message="assign driver?" header="Confirm" severity="warn">
+			<p:commandButton value="Yes" icon="pi pi-check"
+				action="#{conductorVehiculoMB.assignDriverToVehicle()}"
+				process="@this" ajax="true" />
+			<p:commandButton value="No" type="button"
+				styleClass="ui-button-secondary" icon="pi pi-times"
+				onclick="PF('assignDriverDialog').hide(), PF('manageVehicleDialog').hide()" />
+		</p:confirmDialog>
+
+	</h:form>
+
+</h:body>
+</html>

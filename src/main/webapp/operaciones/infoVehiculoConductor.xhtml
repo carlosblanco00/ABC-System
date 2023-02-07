@@ -1,0 +1,410 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+<h:head>
+	<meta charset="utf-8" name="viewport"
+		content="width=device-width, initial-scale=1"
+		http-equiv="X-UA-Conpatible" />
+	<title>#{msgs['form.operaciones']}</title>
+</h:head>
+
+<h:body>
+
+	<h:form id="form">
+
+		<p:tabMenu activeIndex="2">
+				<p:menuitem value="#{msgs['form.index']}"
+					outcome="/index.xhtml" icon="pi pi-fw pi-users">
+				</p:menuitem>
+				<p:menuitem value="#{msgs['form.gerencia']}" outcome="/gerencia/proveedores.xhtml"
+					icon="pi pi-fw pi-home">
+				</p:menuitem>
+				<p:menuitem value="#{msgs['form.operaciones']}"
+					outcome="/operaciones/infoVehiculoConductor.xhtml"
+					icon="pi pi-fw pi-cog">
+				</p:menuitem>
+			</p:tabMenu>
+
+		<p:fieldset legend="#{msgs['formVehiculo.titulo']}" toggleable="true"
+			toggleSpeed="500">
+
+			<p:panelGrid columns="4" id="conductorVehiculoFilter"
+				columnClasses="ui-grid-col-2,ui-grid-col-4,ui-grid-col-2,ui-grid-col-4"
+				layout="grid" styleClass="ui-panelgrid-blank ui-fluid"
+				style="border:0px none; background-color:transparent;">
+
+				<p:row>#{msgs['form.filtro']}</p:row>
+
+				<p:outputLabel value="#{msgs['formProveedor.proveedor']}:" />
+				<p:selectOneMenu id="selectProvider"
+					value="#{conductorVehiculoMB.vehiculoCondutorFilter.idProveedor}">
+					<f:selectItem itemLabel="Todos" itemValue="" />
+					<f:selectItems value="#{proveedorMB.listProvider}" var="provider"
+						itemLabel="#{provider.nombre}" itemValue="#{provider.id}" />
+				</p:selectOneMenu>
+
+				<p:outputLabel value="#{msgs['formVehiculo.placa']}:" />
+				<p:inputText id="placa"
+					value="#{conductorVehiculoMB.vehiculoCondutorFilter.placa}" />
+
+				<p:outputLabel value="#{msgs['formConductor.identifiacionConductor']}:" />
+				<p:inputText id="idConductor"
+					value="#{conductorVehiculoMB.vehiculoCondutorFilter.numIdentConductor}" />
+
+			</p:panelGrid>
+
+			<p:panelGrid columns="1" styleClass="ui-panelgrid-blank ui-fluid"
+				style="border:0px none; background-color:transparent;" align="right">
+
+				<p:commandButton value="#{msgs['form.buscar']}" icon="pi pi-check"
+					action="#{conductorVehiculoMB.buscarVehiculosCondutores}"
+					process="conductorVehiculoFilter @this"
+					update="conductorVehiculoDataTable" ajax="true">
+				</p:commandButton>
+
+			</p:panelGrid>
+
+		</p:fieldset>
+
+		<p:panelGrid columns="1" layout="grid"
+			styleClass="showcase-text-align-center">
+
+			<p:dataTable id="conductorVehiculoDataTable" var="conductorVehiculo"
+				value="#{conductorVehiculoMB.listConductorVehiculo}"
+				widgetVar="conductorVehiculoDataTable"
+				emptyMessage="No se encontraron datos"
+				filteredValue="#{conductorVehiculoMB.filteredConductorVehiculo}"
+				lazy="false">
+
+				<f:facet name="header">
+
+					<p:toolbar>
+						<p:toolbarGroup>
+							<span>#{msgs['formVehiculo.vehiculos']}</span>
+						</p:toolbarGroup>
+						<p:toolbarGroup align="right">
+							<p:commandButton value="New" icon="pi pi-plus"
+								oncomplete="PF('manageVehicleDialog').show()"
+								update=":form:manageVehicleDialog"
+								action="#{conductorVehiculoMB.resetVehiculoEntit()}"
+								styleClass="ui-button-success" style="margin-right: .5rem">
+							</p:commandButton>
+						</p:toolbarGroup>
+					</p:toolbar>
+
+				</f:facet>
+
+				<p:column headerText="#{msgs['formVehiculo.placa']}"
+					sortBy="#{conductorVehiculo.vehiculo.placa}"
+					filterBy="#{conductorVehiculo.vehiculo.placa}"
+					filterMatchMode="contains">
+					<h:outputText value="#{conductorVehiculo.vehiculo.placa}" />
+				</p:column>
+
+				<p:column headerText="#{msgs['formVehiculo.marca']}"
+					sortBy="#{conductorVehiculo.vehiculo.marca}">
+					<h:outputText style="vertical-align: middle; margin-left: .5rem"
+						value="#{conductorVehiculo.vehiculo.marca}" />
+				</p:column>
+
+				<p:column headerText="#{msgs['formVehiculo.modelo']}"
+					sortBy="#{conductorVehiculo.vehiculo.modelo}">
+					<h:outputText style="vertical-align: middle; margin-left: .5rem"
+						value="#{conductorVehiculo.vehiculo.modelo}" />
+				</p:column>
+
+				<p:column headerText="#{msgs['form.numIdentificacion']}"
+					filterBy="#{conductorVehiculo.conductor.numeroIdentificacion}"
+					filterMatchMode="contains"
+					sortBy="#{conductorVehiculo.conductor.numeroIdentificacion}">
+					<h:outputText
+						value="#{conductorVehiculo.conductor.numeroIdentificacion}"
+						rendered="#{conductorVehiculo.conductor != null}" />
+
+					<p:commandButton value="#{msgs['formConductor.asignarConductor']}" icon="pi pi-plus"
+						oncomplete="PF('driverDialog').show()" process="@this"
+						update=":form:driverDialog"
+						rendered="#{conductorVehiculo.conductor == null}"
+						styleClass="ui-button-success" style="margin-right: .5rem">
+						<f:setPropertyActionListener
+							target="#{conductorVehiculoMB.selectedConductorVehiculoEntity}"
+							value="#{conductorVehiculo}" />
+					</p:commandButton>
+
+				</p:column>
+
+				<p:column headerText="#{msgs['formConductor.nombreConductor']}" filterMatchMode="contains">
+					<h:outputText value="#{conductorVehiculo.conductor.nombre}"
+						rendered="#{conductorVehiculo.conductor != null}" />
+				</p:column>
+
+				<p:column headerText="#{msgs['formVehiculo.estado']}">
+					<h:outputText value="#{conductorVehiculo.vehiculo.estado}" />
+				</p:column>
+
+				<p:column exportable="false">
+					<p:commandButton icon="pi pi-pencil"
+						update=":form:manageVehicleDialog"
+						oncomplete="PF('manageVehicleDialog').show()"
+						styleClass="edit-button rounded-button" process="@this">
+						<f:setPropertyActionListener
+							target="#{conductorVehiculoMB.vehiculoEntity}"
+							value="#{conductorVehiculo.vehiculo}" />
+					</p:commandButton>
+
+					<p:commandButton class="ui-button-danger rounded-button"
+						icon="pi pi-trash" process="@this" update=""
+						oncomplete="PF('deleteVehiculeDialog').show()">
+						<f:setPropertyActionListener
+							target="#{conductorVehiculoMB.vehiculoEntity}"
+							value="#{conductorVehiculo.vehiculo}" />
+					</p:commandButton>
+				</p:column>
+
+			</p:dataTable>
+
+
+		</p:panelGrid>
+
+		<p:dialog id="manageVehicleDialog"
+			header="#{conductorVehiculoMB.vehiculoEntity.idVehiculo == null? 'Guardar vehículo' : 'Editar vehículo' }"
+			showEffect="fade" modal="true" widgetVar="manageVehicleDialog"
+			responsive="true">
+			<p:outputPanel id="manage-vehicle" class="ui-fluid">
+
+
+				<div class="field">
+					<p:outputLabel for="newPlaca">#{msgs['formVehiculo.placa']}</p:outputLabel>
+					<p:inputText id="newPlaca"
+						value="#{conductorVehiculoMB.vehiculoEntity.placa}"
+						required="true" />
+				</div>
+				<div class="field">
+					<p:outputLabel for="newMarca">#{msgs['formVehiculo.marca']}</p:outputLabel>
+					<p:inputText id="newMarca"
+						value="#{conductorVehiculoMB.vehiculoEntity.marca}" />
+				</div>
+				<div class="field">
+					<p:outputLabel for="newModelo">#{msgs['formVehiculo.modelo']}</p:outputLabel>
+					<p:inputText id="newModelo"
+						value="#{conductorVehiculoMB.vehiculoEntity.modelo}"
+						required="true" />
+				</div>
+
+				<div class="field">
+					<p:outputLabel for="selectNewProvider" value="#{msgs['formProveedor.proveedor']}: " />
+					<p:selectOneMenu id="selectNewProvider"
+						value="#{conductorVehiculoMB.vehiculoEntity.provedor.id}">
+						<f:selectItem itemLabel="Todos" itemValue="" />
+						<f:selectItems value="#{proveedorMB.listProvider}" var="provider"
+							itemLabel="#{provider.nombre}" itemValue="#{provider.id}" />
+					</p:selectOneMenu>
+				</div>
+
+				<div class="field">
+					<p:outputLabel for="selectNewEstado" value="#{msgs['formVehiculo.estado']} "
+						rendered="#{conductorVehiculoMB.vehiculoEntity.idVehiculo != null}" />
+					<p:selectOneMenu id="selectNewEstado"
+						rendered="#{conductorVehiculoMB.vehiculoEntity.idVehiculo != null}"
+						value="#{conductorVehiculoMB.vehiculoEntity.estado}">
+						<f:selectItem itemLabel="Selecccione" itemValue="" />
+						<f:selectItems value="#{conductorVehiculoMB.estadosVehiculo}"
+							var="estado" itemLabel="#{estado}"
+							itemValue="#{estado.toString()}" />
+					</p:selectOneMenu>
+				</div>
+
+			</p:outputPanel>
+
+			<f:facet name="footer">
+				<p:commandButton value="#{msgs['form.guardar']}" icon="pi pi-check"
+					action="#{conductorVehiculoMB.saveVehicle()}"
+					update=":form:conductorVehiculoDataTable, manageVehicleDialog"
+					process="manage-vehicle @this" />
+
+				<p:commandButton value="#{msgs['formConductor.eliminarConductor']}" icon="pi pi-times"
+					action="#{conductorVehiculoMB.deleteConductorVehiculo()}"
+					class="ui-button-danger" process="@this" rendered="#{conductorVehiculoMB.vehiculoEntity.idVehiculo != null}"
+					update=":form:conductorVehiculoDataTable, manageVehicleDialog" />
+
+				<p:commandButton value="#{msgs['form.cancelar']}" icon="pi pi-times"
+					onclick="PF('manageVehicleDialog').hide()"
+					class="ui-button-secondary" type="button"
+					update=":form:conductorVehiculoDataTable, manageVehicleDialog" />
+			</f:facet>
+		</p:dialog>
+
+		<p:confirmDialog id="deleteVehiculeDialog"
+			widgetVar="deleteVehiculeDialog" showEffect="fade" width="300"
+			message="#{msgs['formVehiculo.confirmarElim']} #{conductorVehiculoMB.vehiculoEntity.placa}?"
+			header="Confirm" severity="warn">
+			<p:commandButton value="Yes" icon="pi pi-check"
+				action="#{conductorVehiculoMB.deleteVehicule()}" process="@this"
+				update=":form:conductorVehiculoDataTable" ajax="true"
+				oncomplete="PF('deleteVehiculeDialog').hide()" />
+			<p:commandButton value="No" type="button"
+				styleClass="ui-button-secondary" icon="pi pi-times"
+				onclick="PF('deleteProviderDialog').hide()" />
+		</p:confirmDialog>
+
+		<p:dialog id="driverDialog" showEffect="fade" widgetVar="driverDialog"
+			modal="true" responsive="true">
+
+			<p:panelGrid columns="1" layout="grid"
+				styleClass="showcase-text-align-center">
+
+				<p:dataTable id="driverDataTable" var="driver"
+					value="#{conductorVehiculoMB.listConductor}"
+					widgetVar="driverDataTable" emptyMessage="#{msgs['form.noData']}"
+					filteredValue="#{conductorVehiculoMB.filteredConductor}"
+					lazy="false"
+					selection="#{conductorVehiculoMB.selectedConductorEntity}"
+					selectionMode="single" rowKey="#{driver.idConductor}">
+
+					<p:ajax event="rowSelect"
+						oncomplete="PF('assignDriverDialog').show()"
+						update=":form:assignDriverDialog" process="driverDataTable" />
+
+					<f:facet name="header">
+
+						<p:toolbar>
+							<p:toolbarGroup>
+								<span>#{msgs['formConductor.info']}</span>
+							</p:toolbarGroup>
+							<p:toolbarGroup align="right">
+								<p:commandButton value="#{msgs['form.nuevo']}" icon="pi pi-plus"
+									oncomplete="PF('manageDriverDialog').show()"
+									action="#{conductorVehiculoMB.resetConductorEntity()}"
+									update=":form:manageDriverDialog"
+									styleClass="ui-button-success" style="margin-right: .5rem">
+									<p:resetInput target="" />
+								</p:commandButton>
+							</p:toolbarGroup>
+						</p:toolbar>
+
+					</f:facet>
+
+					<p:column headerText="#{msgs['form.id']}" sortBy="#{provider.id}">
+						<h:outputText value="#{driver.idConductor}" />
+					</p:column>
+
+					<p:column headerText="#{msgs['form.nombre']}" sortBy="#{driver.nombre}"
+						filterBy="#{driver.nombre}" filterMatchMode="contains">
+						<h:outputText style="vertical-align: middle; margin-left: .5rem"
+							value="#{driver.nombre}" />
+					</p:column>
+
+					<p:column headerText="#{msgs['form.numIdentificacion']}"
+						filterBy="#{driver.numeroIdentificacion}"
+						filterMatchMode="contains" sortBy="#{driver.numeroIdentificacion}">
+
+						<h:outputText style="vertical-align: middle; margin-left: .5rem"
+							value="#{driver.numeroIdentificacion}" />
+					</p:column>
+
+					<p:column headerText="#{msgs['formProveedor.proveedor']}" filterMatchMode="contains"
+						sortBy="#{driver.provedor.nombre}">
+						<h:outputText value="#{driver.provedor.nombre}" />
+					</p:column>
+
+					<p:column exportable="false">
+						<p:commandButton icon="pi pi-pencil"
+							update=":form:manageDriverDialog"
+							oncomplete="PF('manageDriverDialog').show()"
+							styleClass="edit-button rounded-button" process="@this">
+							<f:setPropertyActionListener
+								target="#{conductorVehiculoMB.conductorEntity}"
+								value="#{driver}" />
+						</p:commandButton>
+
+						<p:commandButton class="ui-button-danger rounded-button"
+							icon="pi pi-trash" process="@this"
+							update=":form:deleteDriverDialog"
+							oncomplete="PF('deleteDriverDialog').show()">
+							<f:setPropertyActionListener
+								target="#{conductorVehiculoMB.conductorEntity}"
+								value="#{driver}" />
+						</p:commandButton>
+					</p:column>
+
+				</p:dataTable>
+
+			</p:panelGrid>
+
+		</p:dialog>
+
+		<p:dialog id="manageDriverDialog"
+			header="#{conductorVehiculoMB.conductorEntity.idConductor == null? 'Nuevo conductor': 'Editar conductor'}"
+			showEffect="fade" widgetVar="manageDriverDialog" responsive="true">
+			<p:outputPanel id="manage-driver" class="ui-fluid">
+				<p:outputPanel>
+
+					<div class="field">
+						<p:outputLabel for="name">#{msgs['form.nombre']}</p:outputLabel>
+						<p:inputText id="name"
+							value="#{conductorVehiculoMB.conductorEntity.nombre}"
+							required="true" />
+					</div>
+					<div class="field">
+						<p:outputLabel for="numIdentificacion">#{msgs['form.numIdentificacion']}</p:outputLabel>
+						<p:inputText id="numIdentificacion"
+							value="#{conductorVehiculoMB.conductorEntity.numeroIdentificacion}" />
+					</div>
+					<div class="field">
+						<p:outputLabel for="selectNewProvider" value="Proveedor: " />
+						<p:selectOneMenu id="selectNewProviderDriver"
+							value="#{conductorVehiculoMB.conductorEntity.provedor.id}">
+							<f:selectItem itemLabel="Todos" itemValue="" />
+							<f:selectItems value="#{proveedorMB.listProvider}" var="provider"
+								itemLabel="#{provider.nombre}" itemValue="#{provider.id}" />
+						</p:selectOneMenu>
+					</div>
+
+				</p:outputPanel>
+			</p:outputPanel>
+
+			<f:facet name="footer">
+				<p:commandButton value="#{msgs['form.guardar']}" icon="pi pi-check"
+					oncomplete="PF('assignDriverDialog').show(), PF('manageDriverDialog').hide()"
+					action="#{conductorVehiculoMB.saveDriver}"
+					update=":form:driverDataTable :form:assignDriverDialog" ajax="true"
+					process="manageDriverDialog @this" />
+				<p:commandButton value="#{msgs['form.cancelar']}" icon="pi pi-times"
+					onclick="PF('manageProviderDialog').hide()"
+					class="ui-button-secondary" type="button" update="" />
+			</f:facet>
+		</p:dialog>
+
+		<p:confirmDialog id="deleteDriverDialog"
+			widgetVar="deleteDriverDialog" showEffect="fade" width="300"
+			message="#{msgs['formConductor.confirElim']} #{conductorVehiculoMB.conductorEntity.nombre}?"
+			header="Confirm" severity="warn">
+			<p:commandButton value="Yes" icon="pi pi-check"
+				action="#{conductorVehiculoMB.deleteDriver}" process="@this"
+				update=":form:driverDataTable" ajax="true"
+				oncomplete="PF('deleteDriverDialog').hide()" />
+			<p:commandButton value="No" type="button"
+				styleClass="ui-button-secondary" icon="pi pi-times"
+				onclick="PF('deleteDriverDialog').hide()" />
+		</p:confirmDialog>
+
+		<p:confirmDialog id="assignDriverDialog"
+			widgetVar="assignDriverDialog" showEffect="fade" width="300"
+			message="Assign #{conductorVehiculoMB.selectedConductorEntity.nombre} to #{conductorVehiculoMB.selectedConductorVehiculoEntity.vehiculo.placa}?"
+			header="Confirm" severity="warn">
+			<p:commandButton value="Yes" icon="pi pi-check"
+				action="#{conductorVehiculoMB.assignDriverToVehicle}"
+				process="@this" update=":form:conductorVehiculoDataTable"
+				ajax="true"
+				oncomplete="PF('assignDriverDialog').hide(), PF('driverDialog').hide()" />
+			<p:commandButton value="No" type="button"
+				styleClass="ui-button-secondary" icon="pi pi-times"
+				onclick="PF('assignDriverDialog').hide()" />
+		</p:confirmDialog>
+	</h:form>
+
+</h:body>
+</html>
